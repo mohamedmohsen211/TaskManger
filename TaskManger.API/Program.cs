@@ -6,11 +6,25 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using TaskManger.API.Data;
 using TaskManger.API.Services;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -44,7 +58,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AppDpContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<JwtService>();
-    
+builder.Services.AddScoped<LogService>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -79,6 +94,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 

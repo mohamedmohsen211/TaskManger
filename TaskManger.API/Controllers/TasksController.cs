@@ -1,22 +1,28 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using TaskManger.API.Data;
 using TaskManger.API.DTOs;
 using TaskManger.API.Models;
+using TaskManger.API.Services;
 
 namespace TaskManger.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [EnableRateLimiting("fixed")]
     public class TasksController : Controller
     {
         private readonly AppDpContext _context;
-        public TasksController(AppDpContext context)
+        private readonly LogService _logService;
+        public TasksController(AppDpContext context,LogService logService)
         {
             _context = context;
+            _logService = logService;
         }
         [HttpPost]
         public async Task<IActionResult> CreateTask(CreateTaskDto dto)
@@ -44,6 +50,9 @@ namespace TaskManger.API.Controllers
 
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
+
+            await _logService.LogAsync(Guid.Parse(userId), $"Task created: {task.Id}",
+                HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString()??"Unkown");
 
             return Ok(response);
         }
@@ -87,6 +96,9 @@ namespace TaskManger.API.Controllers
             task.Status = dto.status;
 
             await _context.SaveChangesAsync();
+            
+            await _logService.LogAsync(Guid.Parse(userId), $"Task updated: {task.Id}",
+                HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "Unkown");
 
             var response = new TaskResponseDto
             {
@@ -113,6 +125,10 @@ namespace TaskManger.API.Controllers
 
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
+            
+            await _logService.LogAsync(Guid.Parse(userId), $"Task deleted: {task.Id}",
+                HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "Unkown");
+
             return NoContent();
         }
     }

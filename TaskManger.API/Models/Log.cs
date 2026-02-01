@@ -6,7 +6,7 @@ namespace TaskManger.API.Models
     {
         [Key]
         public Guid Id { get; set; }
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         [Required]
         [MaxLength(200)]
         public string Action { get; set; } = string.Empty;
