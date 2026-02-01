@@ -80,7 +80,7 @@ namespace TaskManger.API.Controllers
             var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userGuid);
 
             if (task == null)
-                return NotFound();
+                return NotFound(new {message = "No Task with this ID OR It's not your task"});
 
             task.Title = dto.Title;
             task.Description = dto.Description;
@@ -109,7 +109,7 @@ namespace TaskManger.API.Controllers
             var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userGuid);
 
             if (task == null)
-                return NotFound();
+                return NotFound(new {message = "No task with this ID OR it's not your task" });
 
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
