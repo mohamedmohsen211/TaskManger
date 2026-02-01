@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManger.API.Data;
+using TaskManger.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDpContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<JwtService>();
 
 
 var app = builder.Build();
