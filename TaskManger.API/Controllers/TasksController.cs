@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using TaskManger.API.Data;
 using TaskManger.API.DTOs;
 using TaskManger.API.Models;
